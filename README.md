@@ -6,7 +6,7 @@
 - 選定術語的共現詞（AND / OR / NOT / 括號工具可直接插入布林查詢）
 - 對應的研究列表（支援年份排序、Load more 分頁、布林關鍵字高亮）
 
-整體以 Tailwind CSS 建構，並將原本 inline JS 拆分至 `public/assets/app.js`，方便維護與部署。
+整體以 Tailwind CSS 建構，並將原本 inline JS 拆分至 `assets/app.js`，方便維護與部署。
 
 ---
 
@@ -16,7 +16,7 @@
 - **布林查詢工具列**：點擊共現詞再搭配 AND / OR / NOT / `(`/`)` 按鈕即可插入查詢語句，搜尋結果即時更新。
 - **多主機備援**：預設連線 `https://hpc.psy.ntu.edu.tw:5000`，若逾時會自動改用 `https://mil.psy.ntu.edu.tw:5000`，並在快取命中時顯示。
 - **快取與高亮**：布林查詢結果會快取，命中後 150ms 內顯示，且在研究卡片標題、期刊、作者欄位標示出所有關鍵字。
-- **靜態部署友善**：Tailwind 透過 `npm run build` 產生 `public/assets/app.css`，整個 `public/` 目錄可直接部署至任何靜態網站服務。
+- **靜態部署友善**：Tailwind 透過 `npm run build` 產生 `assets/app.css`，整個專案根目錄即可被任何靜態網站服務使用。
 
 ---
 
@@ -33,11 +33,11 @@
 # 安裝依賴
 npm install
 
-# 開發模式：監聽 Tailwind，輸出至 public/assets/app.css
+# 開發模式：監聽 Tailwind，輸出至 assets/app.css
 npm run dev
 ```
 
-開發時建議搭配簡易靜態伺服器（例如 `npx serve public` 或 VS Code Live Server）開啟 `public/index.html` 以避免 `file://` 無法呼叫 API 的問題。
+開發時建議搭配簡易靜態伺服器（例如 `npx serve .` 或 VS Code Live Server）開啟 `index.html`，避免 `file://` 無法呼叫 API 的問題。
 
 ---
 
@@ -50,10 +50,10 @@ npm run build
 指令會執行：
 
 ```
-tailwindcss -i ./src/styles.css -o ./public/assets/app.css --minify
+tailwindcss -i ./src/styles.css -o ./assets/app.css --minify
 ```
 
-完成後 `public/` 內的 `index.html` + `assets/` 即為最終靜態檔案，可直接部署。
+完成後根目錄的 `index.html` + `assets/` 即為最終靜態檔案，可直接部署。
 
 ---
 
@@ -62,26 +62,25 @@ tailwindcss -i ./src/styles.css -o ./public/assets/app.css --minify
 ### GitHub Pages
 
 1. 將專案推送到 GitHub repository。
-2. 在 `Settings → Pages` 中設定來源：
-   - 若選擇 `Deploy from a branch`，可將 `public/` 內容複製到 `docs/` 資料夾，再在 Pages 設 `Branch: main / Folder: /docs`。
-   - 或改用 GitHub Actions，自動執行 `npm run build` 並發布 `public/`。
+2. 在 `Settings → Pages` 中設定來源，可選擇：
+   - `Deploy from a branch` → 分支：`main`、資料夾：`/`（建議先建立 `gh-pages` 分支或使用 `deploy` 指令將建置後結果推到 Pages）。
+   - 或改用 GitHub Actions，自動執行 `npm run build` 並發佈根目錄。
 3. 儲存後稍待片刻，即可取得公開網址 `https://<username>.github.io/<repo>/`。
 
 ### 其他靜態主機
 
-- **Netlify / Vercel / Cloudflare Pages**：設定 build 指令 `npm run build`，deploy directory 指向 `public`。
-- **自架 Nginx / Apache**：直接將 `public` 內容上傳至 DocumentRoot，確保 `app.css`、`app.js` 路徑正確。
+-- **Netlify / Vercel / Cloudflare Pages**：設定 build 指令 `npm run build`，deploy directory 指向專案根目錄（或依需求排除 `src/` 等檔案）。
+-- **自架 Nginx / Apache**：將根目錄的 `index.html` 與 `assets/` 上傳至 DocumentRoot，確保路徑正確。
 
 ---
 
 ## 專案結構
 
 ```
-public/
-  index.html          # 編譯後的主頁
-  assets/
-    app.css           # Tailwind 編譯結果
-    app.js            # 主要互動邏輯（Fetch / Cache / UI Render）
+index.html            # 主頁（引用編譯後的 Tailwind 與互動腳本）
+assets/
+  app.css             # Tailwind 編譯結果
+  app.js              # 主要互動邏輯（Fetch / Cache / UI Render）
 src/
   styles.css          # Tailwind 指令與自訂 layer
 tailwind.config.js    # Tailwind 組態（色票、fonts、content path）
@@ -108,7 +107,7 @@ gpt-5-codex.pdf       # 與 LLM (GPT-5 Codex) 的完整對話紀錄，作為開�
   A：高亮僅針對查詢詞內的關鍵字（排除 AND/OR/NOT/括號），如果某關鍵字未出現在標題、期刊或作者欄位，仍可能存在於 API 回傳的其他欄位（例如摘要）。
 
 - **Q：如何切換後端主機？**  
-  A：`public/assets/app.js` 內 `API_BASES` 陣列可自由調整優先順序或加入更多 mirror。
+  A：`assets/app.js` 內 `API_BASES` 陣列可自由調整優先順序或加入更多 mirror。
 
 - **Q：佈署後出現 CORS 錯誤？**  
   A：請確認佈署的網域是否允許存取 Tren 老師的 API；若伺服器限制較嚴，需透過後端代理或老師提供的 whitelist 處理。
